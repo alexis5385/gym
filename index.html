@@ -3,439 +3,474 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Gimnasio</title>
+    <title>GESTOR DE MIEMBROS SUPRAHUMANOS GYM</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
         }
-        .status-activo { background-color: #d1fae5; color: #065f46; }
-        .status-proximo-vencer { background-color: #fef3c7; color: #92400e; }
-        .status-vencido { background-color: #fee2e2; color: #991b1b; }
-
-        .custom-alert-overlay, .edit-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 1rem; /* Added padding for smaller screens */
-        }
-        .custom-alert-box, .edit-modal-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 90%; /* Ensure modal fits on small screens */
-            width: auto; /* Adjust width based on content */
-        }
-        .custom-alert-box button, .edit-modal-box button {
-            margin-top: 15px;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        .custom-alert-confirm, .edit-modal-save {
-            background-color: #2563eb; /* Blue for save/confirm */
-            color: white;
-            margin-right: 10px;
-        }
-        .custom-alert-cancel, .edit-modal-cancel {
-            background-color: #6b7280; /* Gray for cancel */
-            color: white;
-        }
-        .edit-modal-box label {
+        .table-responsive {
             display: block;
-            text-align: left;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        .edit-modal-box input, .edit-modal-box select {
             width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border: 1px solid #d1d5db; /* gray-300 */
-            border-radius: 6px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        .hidden {
-            display: none;
+        .status-activo { background-color: #d1fae5; color: #065f46; } /* Green */
+        .status-proximo-vencer { background-color: #fef3c7; color: #92400e; } /* Yellow */
+        .status-vencido { background-color: #fee2e2; color: #991b1b; } /* Red */
+
+        /* Custom styles for better form appearance */
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"], select {
+            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
         }
+        label {
+            @apply block text-sm font-medium text-gray-700 mb-1;
+        }
+        .btn {
+            @apply px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150;
+        }
+        .btn-secondary { @apply bg-green-600 hover:bg-green-700 focus:ring-green-500; }
+        .btn-warning { @apply bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400; }
+        .btn-danger { @apply bg-red-600 hover:bg-red-700 focus:ring-red-500; }
+
+        .card {
+            @apply bg-white shadow-xl rounded-lg p-6;
+        }
+        th { @apply bg-gray-100; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 p-4 md:p-8">
-
-    <div class="container mx-auto max-w-5xl">
+<body class="p-4 md:p-8">
+    <div class="container mx-auto max-w-6xl">
         <header class="mb-8 text-center">
-            <h1 class="text-3xl md:text-4xl font-bold text-sky-600">Gestión de Membresías del Gimnasio</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-indigo-700">GESTOR DE MIEMBROS SUPRAHUMANOS GYM</h1>
         </header>
 
-        <section id="registration-form-section" class="mb-10 p-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold mb-6 text-sky-700">Registrar Nuevo Miembro</h2>
-            <form id="member-form" class="space-y-4">
+        <div class="card mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6" id="formTitle">Registrar Nuevo Miembro</h2>
+            <form id="memberForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <input type="hidden" id="editingMemberId">
                 <div>
-                    <label for="fullName" class="block text-sm font-medium text-gray-700">Nombre Completo:</label>
-                    <input type="text" id="fullName" name="fullName" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                    <label for="nombreCompleto">Nombre Completo:</label>
+                    <input type="text" id="nombreCompleto" required>
                 </div>
                 <div>
-                    <label for="registrationDate" class="block text-sm font-medium text-gray-700">Fecha de Inscripción/Inicio:</label>
-                    <input type="date" id="registrationDate" name="registrationDate" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                    <label for="fechaInscripcion">Fecha de Inscripción/Renovación:</label>
+                    <input type="date" id="fechaInscripcion" required>
                 </div>
                 <div>
-                    <label for="membershipType" class="block text-sm font-medium text-gray-700">Tipo de Membresía:</label>
-                    <select id="membershipType" name="membershipType" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                    <label for="tipoMembresia">Tipo de Membresía:</label>
+                    <select id="tipoMembresia" required>
+                        <option value="Día">Día (1 día)</option>
+                        <option value="Tiquetera">Tiquetera (12 visitas al mes)</option>
                         <option value="Mensual">Mensual</option>
-                        <option value="Trimestral">Trimestral</option>
-                        <option value="Anual">Anual</option>
+                        <option value="Mensual Estudiantil">Mensual Estudiantil</option>
+                        <option value="Trimestral">Trimestral (3 meses)</option>
+                        <option value="Semestral">Semestral (6 meses)</option>
+                        <option value="Anual">Anual (12 meses)</option>
+                        <option value="Personalizado">Personalizado</option>
                     </select>
                 </div>
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Correo Electrónico:</label>
-                    <input type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                <div id="personalizadoFields" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+                    <div>
+                        <label for="cantidadPersonalizado">Duración Personalizada:</label>
+                        <input type="number" id="cantidadPersonalizado" min="1" placeholder="Ej: 10">
+                    </div>
+                    <div>
+                        <label for="unidadPersonalizado">Unidad de Duración:</label>
+                        <select id="unidadPersonalizado">
+                            <option value="dias">Días</option>
+                            <option value="semanas">Semanas</option>
+                            <option value="meses">Meses</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">Número de Teléfono:</label>
-                    <input type="tel" id="phone" name="phone" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                    <label for="email">Correo Electrónico:</label>
+                    <input type="email" id="email" required>
                 </div>
-                <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition duration-150 ease-in-out">
-                    Registrar Miembro
-                </button>
+                <div>
+                    <label for="telefono">Número de Teléfono:</label>
+                    <input type="tel" id="telefono" required>
+                </div>
+                <div>
+                    <label for="precio">Precio Pagado ($):</label>
+                    <input type="number" id="precio" min="0" required placeholder="Ej: 120000">
+                </div>
+                <div class="md:col-span-2 flex justify-end space-x-3 mt-4">
+                    <button type="button" id="cancelEditBtn" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors duration-150 hidden">Cancelar Edición</button>
+                    <button type="submit" id="submitBtn" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">Registrar Miembro</button>
+                </div>
             </form>
-        </section>
+        </div>
 
-        <section id="member-list-section" class="p-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-2xl font-semibold mb-4 text-sky-700">Miembros Registrados</h2>
+        <div class="card">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Miembros Registrados</h2>
             <div class="mb-4">
-                <label for="searchMember" class="block text-sm font-medium text-gray-700">Buscar Miembro por Nombre:</label>
-                <input type="text" id="searchMember" placeholder="Escribe un nombre..." class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                <label for="searchInput" class="sr-only">Buscar Miembro:</label>
+                <input type="text" id="searchInput" placeholder="Buscar por nombre..." class="w-full md:w-1/2">
             </div>
-            <div class="overflow-x-auto">
-                <table id="membersTable" class="min-w-full divide-y divide-gray-200">
+            <div class="table-responsive">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-300">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Último Pago/Inicio</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membresía</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimiento</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Próximo Pago</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inscripción/Renovación</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membresía</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Pagado</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimiento</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Próximo Pago</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="membersTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                    <tbody id="memberList" class="bg-white divide-y divide-gray-200">
+                        </tbody>
                 </table>
             </div>
-            <p id="no-members-message" class="text-center text-gray-500 py-4 hidden">No hay miembros registrados.</p>
-        </section>
-    </div>
-
-    <div id="customAlertContainer"></div>
-
-    <div id="editMemberModal" class="edit-modal-overlay hidden">
-        <div class="edit-modal-box">
-            <h3 class="text-xl font-semibold mb-4">Editar Miembro</h3>
-            <form id="edit-form" class="space-y-3">
-                <input type="hidden" id="editMemberId">
-                <div>
-                    <label for="editFullName">Nombre Completo:</label>
-                    <input type="text" id="editFullName" required>
-                </div>
-                <div>
-                    <label for="editLastPaymentDate">Fecha de Último Pago/Inicio:</label>
-                    <input type="date" id="editLastPaymentDate" required>
-                </div>
-                <div>
-                    <label for="editMembershipType">Tipo de Membresía:</label>
-                    <select id="editMembershipType" required>
-                        <option value="Mensual">Mensual</option>
-                        <option value="Trimestral">Trimestral</option>
-                        <option value="Anual">Anual</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="editEmail">Correo Electrónico:</label>
-                    <input type="email" id="editEmail" required>
-                </div>
-                <div>
-                    <label for="editPhone">Número de Teléfono:</label>
-                    <input type="tel" id="editPhone" required>
-                </div>
-                <div class="flex justify-end space-x-3 pt-3">
-                    <button type="button" id="cancelEdit" class="edit-modal-cancel">Cancelar</button>
-                    <button type="submit" class="edit-modal-save">Guardar Cambios</button>
-                </div>
-            </form>
+             <p id="noMembersMessage" class="text-center text-gray-500 py-4 hidden">No hay miembros registrados.</p>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const memberForm = document.getElementById('member-form');
-            const membersTableBody = document.getElementById('membersTableBody');
-            const searchMemberInput = document.getElementById('searchMember');
-            const registrationDateInput = document.getElementById('registrationDate');
-            const noMembersMessage = document.getElementById('no-members-message');
-            const membersTable = document.getElementById('membersTable');
+        // Elementos del DOM
+        const memberForm = document.getElementById('memberForm');
+        const formTitle = document.getElementById('formTitle');
+        const editingMemberIdInput = document.getElementById('editingMemberId');
+        const nombreCompletoInput = document.getElementById('nombreCompleto');
+        const fechaInscripcionInput = document.getElementById('fechaInscripcion');
+        const tipoMembresiaSelect = document.getElementById('tipoMembresia');
+        const personalizadoFields = document.getElementById('personalizadoFields');
+        const cantidadPersonalizadoInput = document.getElementById('cantidadPersonalizado');
+        const unidadPersonalizadoSelect = document.getElementById('unidadPersonalizado');
+        const emailInput = document.getElementById('email');
+        const telefonoInput = document.getElementById('telefono');
+        const precioInput = document.getElementById('precio');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        
+        const searchInput = document.getElementById('searchInput');
+        const memberList = document.getElementById('memberList');
+        const noMembersMessage = document.getElementById('noMembersMessage');
 
-            // Modal de edición
-            const editMemberModal = document.getElementById('editMemberModal');
-            const editForm = document.getElementById('edit-form');
-            const cancelEditButton = document.getElementById('cancelEdit');
-            let editingMemberId = null; // Para rastrear el ID del miembro que se está editando
+        let members = []; // Array para almacenar los miembros
 
-            const today = new Date().toISOString().split('T')[0];
-            if (registrationDateInput) {
-                registrationDateInput.value = today;
-            }
+        // Definición de clases de Tailwind para los botones
+        const baseButtonClasses = "px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150";
+        
+        // Para botones del formulario
+        const primaryButtonClasses = `${baseButtonClasses} bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500`;
+        const warningButtonClassesSubmit = `${baseButtonClasses} bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400`;
+        const grayButtonClasses = `${baseButtonClasses} bg-gray-500 hover:bg-gray-600 focus:ring-gray-400`;
 
-            let members = JSON.parse(localStorage.getItem('gymMembers')) || [];
+        // Para botones de la tabla
+        const tableButtonBaseClasses = "px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-150";
+        const tableButtonSecondaryClasses = `${tableButtonBaseClasses} bg-green-600 hover:bg-green-700 focus:ring-green-500`;
+        const tableButtonWarningClasses = `${tableButtonBaseClasses} bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-400`;
+        const tableButtonDangerClasses = `${tableButtonBaseClasses} bg-red-600 hover:bg-red-700 focus:ring-red-500`;
 
-            function showCustomAlert(message, type = 'info', onConfirm) {
-                const alertContainer = document.getElementById('customAlertContainer');
-                alertContainer.innerHTML = ''; 
 
-                const overlay = document.createElement('div');
-                overlay.className = 'custom-alert-overlay';
+        // --- Lógica de Fechas ---
+        function formatDate(date) {
+            if (!date) return '';
+            const adjustedDate = new Date(date.getTime() - (date.getTimezoneOffset() * -60000));
+            return adjustedDate.toISOString().split('T')[0];
+        }
+        
+        function parseDate(dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            return new Date(Date.UTC(year, month - 1, day));
+        }
 
-                const alertBox = document.createElement('div');
-                alertBox.className = 'custom-alert-box';
+        function calcularFechaVencimiento(fechaReferenciaStr, tipoMembresia, cantidadPersonalizado, unidadPersonalizado) {
+            const fechaReferencia = parseDate(fechaReferenciaStr);
+            let fechaVencimiento = new Date(fechaReferencia.getTime()); 
 
-                const messageP = document.createElement('p');
-                messageP.textContent = message;
-                alertBox.appendChild(messageP);
-
-                if (type === 'confirm') {
-                    const confirmButton = document.createElement('button');
-                    confirmButton.textContent = 'Confirmar';
-                    confirmButton.className = 'bg-red-600 text-white'; // Red for delete confirmation
-                    confirmButton.onclick = () => {
-                        if (onConfirm) onConfirm();
-                        overlay.remove();
-                    };
-                    alertBox.appendChild(confirmButton);
-
-                    const cancelButton = document.createElement('button');
-                    cancelButton.textContent = 'Cancelar';
-                    cancelButton.className = 'custom-alert-cancel';
-                    cancelButton.onclick = () => overlay.remove();
-                    alertBox.appendChild(cancelButton);
-                } else { 
-                    const okButton = document.createElement('button');
-                    okButton.textContent = 'OK';
-                    okButton.className = 'bg-sky-600 text-white';
-                    okButton.onclick = () => overlay.remove();
-                    alertBox.appendChild(okButton);
-                }
-                overlay.appendChild(alertBox);
-                alertContainer.appendChild(overlay);
-            }
-
-            function saveMembers() {
-                localStorage.setItem('gymMembers', JSON.stringify(members));
-            }
-
-            function calculateExpiryDate(startDateStr, membershipType) {
-                const startDate = new Date(startDateStr + 'T00:00:00');
-                if (isNaN(startDate.getTime())) {
-                    console.error("Fecha de inicio inválida:", startDateStr);
-                    return new Date(); 
-                }
-                let expiryDate = new Date(startDate);
-                switch (membershipType) {
-                    case 'Mensual': expiryDate.setMonth(startDate.getMonth() + 1); break;
-                    case 'Trimestral': expiryDate.setMonth(startDate.getMonth() + 3); break;
-                    case 'Anual': expiryDate.setFullYear(startDate.getFullYear() + 1); break;
-                    default: expiryDate.setMonth(startDate.getMonth() + 1);
-                }
-                return expiryDate;
-            }
-
-            function getMembershipStatus(expiryDateStr) {
-                const expiryDate = new Date(expiryDateStr);
-                const todayDate = new Date();
-                todayDate.setHours(0, 0, 0, 0); 
-                expiryDate.setHours(0,0,0,0);
-
-                const sevenDaysFromNow = new Date(todayDate);
-                sevenDaysFromNow.setDate(todayDate.getDate() + 7);
-
-                if (expiryDate < todayDate) return { text: 'Vencido', class: 'status-vencido' };
-                if (expiryDate <= sevenDaysFromNow) return { text: 'Próximo a Vencer', class: 'status-proximo-vencer' };
-                return { text: 'Activo', class: 'status-activo' };
-            }
-            
-            function formatDate(date, format = 'display') {
-                let d = date;
-                if (!(d instanceof Date) || isNaN(d.getTime())) {
-                    d = new Date(d);
-                    if (isNaN(d.getTime())) return "Fecha Inválida";
-                }
-                const day = String(d.getDate()).padStart(2, '0');
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const year = d.getFullYear();
-                return format === 'input' ? `${year}-${month}-${day}` : `${day}/${month}/${year}`;
-            }
-
-            function renderMembers(filteredMembers = members) {
-                if (!membersTableBody) return;
-                membersTableBody.innerHTML = ''; 
-
-                if (filteredMembers.length === 0) {
-                    noMembersMessage.classList.remove('hidden');
-                    membersTable.classList.add('hidden');
-                } else {
-                    noMembersMessage.classList.add('hidden');
-                    membersTable.classList.remove('hidden');
-                }
-
-                filteredMembers.forEach((member) => { // No necesitamos el índice aquí ya que usamos member.id
-                    const expiryDate = calculateExpiryDate(member.lastPaymentDate, member.membershipType);
-                    const status = getMembershipStatus(expiryDate);
-                    const row = membersTableBody.insertRow();
-                    row.className = `member-row ${status.class}`; 
-
-                    row.innerHTML = `
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">${member.fullName}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">${formatDate(member.lastPaymentDate)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">${member.membershipType}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">${member.email}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">${member.phone}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">${formatDate(expiryDate)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm">${formatDate(expiryDate)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold">${status.text}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-1 md:space-x-2">
-                            <button data-id="${member.id}" class="edit-btn text-blue-600 hover:text-blue-800 font-semibold py-1 px-2 rounded-md bg-blue-100 hover:bg-blue-200 transition">Editar</button>
-                            <button data-id="${member.id}" class="renew-btn text-green-600 hover:text-green-800 font-semibold py-1 px-2 rounded-md bg-green-100 hover:bg-green-200 transition">Renovar</button>
-                            <button data-id="${member.id}" class="delete-btn text-red-600 hover:text-red-800 font-semibold py-1 px-2 rounded-md bg-red-100 hover:bg-red-200 transition">Eliminar</button>
-                        </td>
-                    `;
-                });
-                addEventListenersToTableButtons();
-            }
-            
-            function addEventListenersToTableButtons() {
-                document.querySelectorAll('.edit-btn').forEach(button => button.addEventListener('click', handleOpenEditModal));
-                document.querySelectorAll('.renew-btn').forEach(button => button.addEventListener('click', handleRenewMember));
-                document.querySelectorAll('.delete-btn').forEach(button => button.addEventListener('click', handleDeleteMember));
-            }
-
-            if (memberForm) {
-                memberForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const newMember = {
-                        id: Date.now().toString(), // ID único como string
-                        fullName: memberForm.fullName.value,
-                        lastPaymentDate: memberForm.registrationDate.value,
-                        membershipType: memberForm.membershipType.value,
-                        email: memberForm.email.value,
-                        phone: memberForm.phone.value,
-                    };
-                    members.push(newMember);
-                    saveMembers();
-                    renderMembers(getFilteredMembers());
-                    memberForm.reset();
-                    if(registrationDateInput) registrationDateInput.value = today;
-                    showCustomAlert('Miembro registrado exitosamente.', 'info');
-                });
-            }
-
-            function handleOpenEditModal(event) {
-                editingMemberId = event.target.dataset.id;
-                const memberToEdit = members.find(m => m.id === editingMemberId);
-                if (memberToEdit && editForm && editMemberModal) {
-                    editForm.editMemberId.value = memberToEdit.id;
-                    editForm.editFullName.value = memberToEdit.fullName;
-                    editForm.editLastPaymentDate.value = formatDate(memberToEdit.lastPaymentDate, 'input');
-                    editForm.editMembershipType.value = memberToEdit.membershipType;
-                    editForm.editEmail.value = memberToEdit.email;
-                    editForm.editPhone.value = memberToEdit.phone;
-                    editMemberModal.classList.remove('hidden');
-                } else {
-                    console.error("No se pudo encontrar el miembro para editar o el formulario de edición no está disponible.");
-                }
-            }
-
-            if (editForm && editMemberModal) {
-                 editForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const memberIndex = members.findIndex(m => m.id === editingMemberId);
-                    if (memberIndex > -1) {
-                        members[memberIndex] = {
-                            ...members[memberIndex], // Conserva el ID y otras propiedades no editadas
-                            fullName: editForm.editFullName.value,
-                            lastPaymentDate: editForm.editLastPaymentDate.value,
-                            membershipType: editForm.editMembershipType.value,
-                            email: editForm.editEmail.value,
-                            phone: editForm.editPhone.value,
-                        };
-                        saveMembers();
-                        renderMembers(getFilteredMembers());
-                        editMemberModal.classList.add('hidden');
-                        showCustomAlert('Datos del miembro actualizados.', 'info');
-                        editingMemberId = null; // Resetear ID en edición
-                    } else {
-                         showCustomAlert('Error: No se pudo encontrar el miembro para actualizar.', 'error');
+            switch (tipoMembresia) {
+                case 'Día':
+                    fechaVencimiento.setUTCDate(fechaVencimiento.getUTCDate() + 1);
+                    break;
+                case 'Tiquetera': 
+                    fechaVencimiento.setUTCMonth(fechaVencimiento.getUTCMonth() + 1);
+                    break;
+                case 'Mensual':
+                case 'Mensual Estudiantil':
+                    fechaVencimiento.setUTCMonth(fechaVencimiento.getUTCMonth() + 1);
+                    break;
+                case 'Trimestral':
+                    fechaVencimiento.setUTCMonth(fechaVencimiento.getUTCMonth() + 3);
+                    break;
+                case 'Semestral':
+                    fechaVencimiento.setUTCMonth(fechaVencimiento.getUTCMonth() + 6);
+                    break;
+                case 'Anual':
+                    fechaVencimiento.setUTCFullYear(fechaVencimiento.getUTCFullYear() + 1);
+                    break;
+                case 'Personalizado':
+                    if (cantidadPersonalizado && unidadPersonalizado) {
+                        const cantidad = parseInt(cantidadPersonalizado, 10);
+                        if (unidadPersonalizado === 'dias') {
+                            fechaVencimiento.setUTCDate(fechaVencimiento.getUTCDate() + cantidad);
+                        } else if (unidadPersonalizado === 'semanas') {
+                            fechaVencimiento.setUTCDate(fechaVencimiento.getUTCDate() + (cantidad * 7));
+                        } else if (unidadPersonalizado === 'meses') {
+                            fechaVencimiento.setUTCMonth(fechaVencimiento.getUTCMonth() + cantidad);
+                        }
                     }
-                });
+                    break;
             }
-           
+            return formatDate(fechaVencimiento);
+        }
 
-            if (cancelEditButton && editMemberModal) {
-                cancelEditButton.addEventListener('click', () => {
-                    editMemberModal.classList.add('hidden');
-                    editingMemberId = null; // Resetear ID en edición
-                });
+        function obtenerEstado(fechaVencimientoStr) {
+            if (!fechaVencimientoStr) return { texto: 'N/A', clase: '' };
+            const hoy = parseDate(formatDate(new Date())); 
+            const fechaVencimiento = parseDate(fechaVencimientoStr);
+            
+            const diffTime = fechaVencimiento.getTime() - hoy.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                return { texto: 'Vencido', clase: 'status-vencido' };
+            } else if (diffDays <= 7) {
+                return { texto: 'Próximo a Vencer', clase: 'status-proximo-vencer' };
+            } else {
+                return { texto: 'Activo', clase: 'status-activo' };
             }
+        }
 
+        // --- LocalStorage ---
+        function guardarMiembros() {
+            localStorage.setItem('gymMembers', JSON.stringify(members));
+        }
 
-            function handleRenewMember(event) {
-                const memberId = event.target.dataset.id;
-                const memberIndex = members.findIndex(m => m.id === memberId);
-                if (memberIndex > -1) {
-                     showCustomAlert(`¿Confirmar renovación para ${members[memberIndex].fullName}? La nueva membresía comenzará hoy.`, 'confirm', () => {
-                        members[memberIndex].lastPaymentDate = new Date().toISOString().split('T')[0];
-                        saveMembers();
-                        renderMembers(getFilteredMembers());
-                        showCustomAlert('Membresía renovada.', 'info');
-                    }, 'bg-green-600'); // Pasar color para botón de confirmación de renovación
+        function cargarMiembros() {
+            const storedMembers = localStorage.getItem('gymMembers');
+            if (storedMembers) {
+                members = JSON.parse(storedMembers);
+            }
+        }
+
+        // --- Renderizado ---
+        function renderizarMiembros(miembrosFiltrados = members) {
+            memberList.innerHTML = ''; 
+
+            if (miembrosFiltrados.length === 0) {
+                noMembersMessage.classList.remove('hidden');
+                return;
+            }
+            noMembersMessage.classList.add('hidden');
+
+            miembrosFiltrados.forEach(member => {
+                const fechaVencimiento = calcularFechaVencimiento(member.fechaReferencia, member.tipoMembresia, member.cantidadPersonalizado, member.unidadPersonalizado);
+                const proximaFechaPago = fechaVencimiento; 
+                const estado = obtenerEstado(fechaVencimiento);
+                
+                // Formatear precio para pesos colombianos
+                const precioFormateado = parseFloat(member.precio).toLocaleString('es-CO', { 
+                    style: 'currency', 
+                    currency: 'COP', 
+                    minimumFractionDigits: 0, 
+                    maximumFractionDigits: 0 
+                });
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${member.nombreCompleto}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${member.fechaReferencia}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                        ${member.tipoMembresia}
+                        ${member.tipoMembresia === 'Personalizado' ? ` (${member.cantidadPersonalizado} ${member.unidadPersonalizado})` : ''}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${precioFormateado}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${fechaVencimiento}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${proximaFechaPago}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${estado.clase}">
+                            ${estado.texto}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button class="${tableButtonSecondaryClasses}" onclick="renovarMiembro('${member.id}')">Renovar</button>
+                        <button class="${tableButtonWarningClasses}" onclick="editarMiembro('${member.id}')">Editar</button>
+                        <button class="${tableButtonDangerClasses}" onclick="eliminarMiembro('${member.id}')">Eliminar</button>
+                    </td>
+                `;
+                memberList.appendChild(row);
+            });
+        }
+        
+        // --- Manejadores de Eventos ---
+        tipoMembresiaSelect.addEventListener('change', function() {
+            if (this.value === 'Personalizado') {
+                personalizadoFields.classList.remove('hidden');
+                cantidadPersonalizadoInput.required = true;
+                unidadPersonalizadoSelect.required = true;
+            } else {
+                personalizadoFields.classList.add('hidden');
+                cantidadPersonalizadoInput.required = false;
+                unidadPersonalizadoSelect.required = false;
+                cantidadPersonalizadoInput.value = ''; 
+            }
+        });
+
+        memberForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const id = editingMemberIdInput.value || Date.now().toString(); 
+            const nombreCompleto = nombreCompletoInput.value.trim();
+            const fechaInscripcion = fechaInscripcionInput.value;
+            const tipoMembresia = tipoMembresiaSelect.value;
+            const email = emailInput.value.trim();
+            const telefono = telefonoInput.value.trim();
+            // Leer el precio como número. El usuario debe ingresar solo dígitos.
+            const precio = parseFloat(precioInput.value); 
+
+            let cantidadPersonalizado = null;
+            let unidadPersonalizado = null;
+
+            if (tipoMembresia === 'Personalizado') {
+                cantidadPersonalizado = cantidadPersonalizadoInput.value;
+                unidadPersonalizado = unidadPersonalizadoSelect.value;
+                if (!cantidadPersonalizado || parseInt(cantidadPersonalizado) <= 0) {
+                    alert('Por favor, ingrese una duración válida para la membresía personalizada.');
+                    return;
                 }
             }
             
-            function handleDeleteMember(event) {
-                const memberId = event.target.dataset.id;
-                const memberIndex = members.findIndex(m => m.id === memberId);
+            if (isNaN(precio) || precio < 0) {
+                alert('Por favor, ingrese un precio válido (solo números).');
+                return;
+            }
+
+            const memberData = {
+                id,
+                nombreCompleto,
+                fechaReferencia: fechaInscripcion, 
+                tipoMembresia,
+                cantidadPersonalizado,
+                unidadPersonalizado,
+                email,
+                telefono,
+                precio // Se guarda como número
+            };
+
+            if (editingMemberIdInput.value) { 
+                const memberIndex = members.findIndex(m => m.id === editingMemberIdInput.value);
                 if (memberIndex > -1) {
-                    showCustomAlert(`¿Seguro que quieres eliminar a ${members[memberIndex].fullName}?`, 'confirm', () => {
-                        members.splice(memberIndex, 1);
-                        saveMembers();
-                        renderMembers(getFilteredMembers());
-                        showCustomAlert('Miembro eliminado.', 'info');
-                    });
+                    members[memberIndex] = memberData;
+                }
+            } else { 
+                members.push(memberData);
+            }
+
+            guardarMiembros();
+            renderizarMiembros();
+            resetForm();
+        });
+
+        cancelEditBtn.addEventListener('click', function() {
+            resetForm();
+        });
+
+        searchInput.addEventListener('input', function(event) {
+            const searchTerm = event.target.value.toLowerCase();
+            const filteredMembers = members.filter(member => 
+                member.nombreCompleto.toLowerCase().includes(searchTerm)
+            );
+            renderizarMiembros(filteredMembers);
+        });
+
+        // --- Funciones Auxiliares ---
+        function resetForm() {
+            memberForm.reset();
+            editingMemberIdInput.value = '';
+            formTitle.textContent = 'Registrar Nuevo Miembro';
+            
+            submitBtn.textContent = 'Registrar Miembro';
+            submitBtn.className = primaryButtonClasses; 
+
+            cancelEditBtn.className = grayButtonClasses + ' hidden'; 
+            
+            personalizadoFields.classList.add('hidden');
+            cantidadPersonalizadoInput.required = false;
+            unidadPersonalizadoSelect.required = false;
+            setDefaultDate(); 
+        }
+
+        function setDefaultDate() {
+            fechaInscripcionInput.value = formatDate(new Date());
+        }
+
+        // --- Acciones de Miembro (globalmente accesibles para onclick) ---
+        window.renovarMiembro = function(memberId) {
+            const memberIndex = members.findIndex(m => m.id === memberId);
+            if (memberIndex > -1) {
+                const confirmRenew = confirm(`¿Desea renovar la membresía para ${members[memberIndex].nombreCompleto} actualizando la fecha de pago a hoy? Esto también actualizará la fecha de vencimiento.`);
+                if (confirmRenew) {
+                    members[memberIndex].fechaReferencia = formatDate(new Date());
+                    guardarMiembros();
+                    renderizarMiembros();
+                    alert('Membresía renovada.');
                 }
             }
+        }
 
-            function getFilteredMembers() {
-                const searchTerm = searchMemberInput ? searchMemberInput.value.toLowerCase() : '';
-                if (!searchTerm) return members;
-                return members.filter(member => member.fullName.toLowerCase().includes(searchTerm));
+        window.editarMiembro = function(memberId) {
+            const member = members.find(m => m.id === memberId);
+            if (member) {
+                formTitle.textContent = 'Editar Miembro';
+                editingMemberIdInput.value = member.id;
+                nombreCompletoInput.value = member.nombreCompleto;
+                fechaInscripcionInput.value = member.fechaReferencia; 
+                tipoMembresiaSelect.value = member.tipoMembresia;
+                emailInput.value = member.email;
+                telefonoInput.value = member.telefono;
+                precioInput.value = member.precio; // Cargar el número sin formato
+
+                if (member.tipoMembresia === 'Personalizado') {
+                    personalizadoFields.classList.remove('hidden');
+                    cantidadPersonalizadoInput.value = member.cantidadPersonalizado;
+                    unidadPersonalizadoSelect.value = member.unidadPersonalizado;
+                    cantidadPersonalizadoInput.required = true;
+                    unidadPersonalizadoSelect.required = true;
+                } else {
+                    personalizadoFields.classList.add('hidden');
+                    cantidadPersonalizadoInput.required = false;
+                    unidadPersonalizadoSelect.required = false;
+                }
+                
+                submitBtn.textContent = 'Actualizar Miembro';
+                submitBtn.className = warningButtonClassesSubmit; 
+
+                cancelEditBtn.className = grayButtonClasses; 
+                cancelEditBtn.classList.remove('hidden');
+                
+                window.scrollTo(0, 0); 
             }
+        }
+
+        window.eliminarMiembro = function(memberId) {
+            const member = members.find(m => m.id === memberId);
+            if (member && confirm(`¿Está seguro de que desea eliminar a ${member.nombreCompleto}? Esta acción no se puede deshacer.`)) {
+                members = members.filter(m => m.id !== memberId);
+                guardarMiembros();
+                renderizarMiembros(); 
+                searchInput.dispatchEvent(new Event('input')); 
+                alert(`${member.nombreCompleto} ha sido eliminado.`);
+            }
+        }
+
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setDefaultDate();
+            cargarMiembros();
+            renderizarMiembros();
             
-            if (searchMemberInput) {
-                searchMemberInput.addEventListener('input', () => {
-                    renderMembers(getFilteredMembers());
-                });
-            }
-
-            renderMembers();
+            submitBtn.className = primaryButtonClasses;
+            cancelEditBtn.className = grayButtonClasses + ' hidden';
         });
     </script>
-
 </body>
 </html>
